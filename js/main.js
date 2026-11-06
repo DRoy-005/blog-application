@@ -1,14 +1,24 @@
 
-/* ==========================================
+/* =====================================================
    BLOGSPACE - MAIN JAVASCRIPT
-   Activities 4, 5 and 6
-   Dynamic Rendering + LocalStorage + CRUD
-========================================== */
+   Day 1: Activities 1-4
+   Day 2: Activities 5-7
+
+   Features:
+   1. Dynamic Blog Rendering
+   2. LocalStorage Persistence
+   3. CRUD Operations
+   4. Search and Category Filtering
+   5. Event Delegation
+   6. User Feedback Messages
+   7. Keyboard Interactions
+   8. Form Validation
+===================================================== */
 
 
-/* ==========================================
+/* =====================================================
    1. DEFAULT BLOG DATA
-========================================== */
+===================================================== */
 
 const defaultBlogs = [
     {
@@ -56,9 +66,9 @@ const defaultBlogs = [
 ];
 
 
-/* ==========================================
+/* =====================================================
    2. LOAD BLOGS FROM LOCALSTORAGE
-========================================== */
+===================================================== */
 
 function loadBlogs() {
 
@@ -74,14 +84,14 @@ function loadBlogs() {
                 return parsedBlogs;
             }
 
+            console.warn("Invalid blog data. Loading default blogs.");
+
         } catch (error) {
 
             console.error("Error loading blogs:", error);
 
         }
     }
-
-    // Initialize default blogs for first-time visitors
 
     localStorage.setItem(
         "blogspace_blogs",
@@ -97,25 +107,38 @@ function loadBlogs() {
 let blogs = loadBlogs();
 
 
-/* ==========================================
+/* =====================================================
    3. SAVE BLOGS TO LOCALSTORAGE
-========================================== */
+===================================================== */
 
 function saveBlogs() {
 
-    localStorage.setItem(
-        "blogspace_blogs",
-        JSON.stringify(blogs)
-    );
+    try {
 
-    console.log("Blogs saved successfully!");
+        localStorage.setItem(
+            "blogspace_blogs",
+            JSON.stringify(blogs)
+        );
+
+        console.log("Blogs saved successfully!");
+
+    } catch (error) {
+
+        console.error("Error saving blogs:", error);
+
+        showMessage(
+            "Unable to save blog data. Please check browser storage.",
+            "error"
+        );
+
+    }
 
 }
 
 
-/* ==========================================
+/* =====================================================
    4. SELECT HTML ELEMENTS
-========================================== */
+===================================================== */
 
 const blogGrid = document.getElementById("blogGrid");
 
@@ -143,22 +166,43 @@ const blogEditor = document.getElementById("blogEditor");
 
 const exploreButton = document.getElementById("exploreBtn");
 
+const statusMessage = document.getElementById("statusMessage");
+
+
+// Track currently edited blog
+
 let editingBlogId = null;
 
 
-/* ==========================================
-   5. READ - DISPLAY BLOGS DYNAMICALLY
-========================================== */
+/* =====================================================
+   5. USER FEEDBACK FUNCTION
+===================================================== */
+
+function showMessage(message, type = "success") {
+
+    if (!statusMessage) return;
+
+    statusMessage.textContent = message;
+
+    statusMessage.className = "status-message " + type;
+
+}
+
+
+/* =====================================================
+   6. READ - DISPLAY BLOGS DYNAMICALLY
+===================================================== */
 
 function displayBlogs(blogList) {
 
     if (!blogGrid) return;
 
-    // Clear previous blog cards
+    // Clear previous cards
 
     blogGrid.replaceChildren();
 
-    // Check if blogs exist
+
+    // Handle empty results
 
     if (blogList.length === 0) {
 
@@ -167,6 +211,7 @@ function displayBlogs(blogList) {
         }
 
         return;
+
     }
 
     if (emptyMessage) {
@@ -174,7 +219,7 @@ function displayBlogs(blogList) {
     }
 
 
-    // Generate each blog card
+    // Create blog cards
 
     blogList.forEach(function(blog) {
 
@@ -213,7 +258,7 @@ function displayBlogs(blogList) {
         description.textContent = blog.description;
 
 
-        // Action buttons
+        // Action container
 
         const actions = document.createElement("div");
 
@@ -224,30 +269,30 @@ function displayBlogs(blogList) {
 
         const editButton = document.createElement("button");
 
+        editButton.type = "button";
+
         editButton.className = "edit-btn";
 
         editButton.textContent = "Edit";
 
-        editButton.addEventListener("click", function() {
+        editButton.dataset.action = "edit";
 
-            editBlog(blog.id);
-
-        });
+        editButton.dataset.id = blog.id;
 
 
         // Delete button
 
         const deleteButton = document.createElement("button");
 
+        deleteButton.type = "button";
+
         deleteButton.className = "delete-btn";
 
         deleteButton.textContent = "Delete";
 
-        deleteButton.addEventListener("click", function() {
+        deleteButton.dataset.action = "delete";
 
-            deleteBlog(blog.id);
-
-        });
+        deleteButton.dataset.id = blog.id;
 
 
         // Append elements
@@ -270,9 +315,9 @@ function displayBlogs(blogList) {
 }
 
 
-/* ==========================================
-   6. CREATE - ADD A NEW BLOG
-========================================== */
+/* =====================================================
+   7. CREATE - ADD A NEW BLOG
+===================================================== */
 
 function addBlog(title, category, description) {
 
@@ -289,26 +334,29 @@ function addBlog(title, category, description) {
     };
 
 
-    // Add new blog at the beginning
+    // Add blog to beginning of array
 
     blogs.unshift(newBlog);
 
 
-    // Save changes
+    // Save and refresh
 
     saveBlogs();
 
-
-    // Refresh displayed blogs
-
     filterBlogs();
+
+
+    showMessage(
+        "Blog published successfully!",
+        "success"
+    );
 
 }
 
 
-/* ==========================================
-   7. UPDATE - EDIT AN EXISTING BLOG
-========================================== */
+/* =====================================================
+   8. UPDATE - EDIT AN EXISTING BLOG
+===================================================== */
 
 function editBlog(id) {
 
@@ -319,15 +367,21 @@ function editBlog(id) {
     });
 
 
-    if (!blog) return;
+    if (!blog) {
+
+        showMessage("Blog not found.", "error");
+
+        return;
+
+    }
 
 
-    // Store the ID of the blog being edited
+    // Store editing ID
 
     editingBlogId = id;
 
 
-    // Fill form with existing blog information
+    // Populate form
 
     blogTitle.value = blog.title;
 
@@ -336,7 +390,7 @@ function editBlog(id) {
     blogDescription.value = blog.description;
 
 
-    // Change form heading and button
+    // Update form heading and button
 
     editorTitle.textContent = "Edit Blog";
 
@@ -351,12 +405,14 @@ function editBlog(id) {
 
     });
 
+    blogTitle.focus();
+
 }
 
 
-/* ==========================================
-   8. DELETE - REMOVE A BLOG
-========================================== */
+/* =====================================================
+   9. DELETE - REMOVE A BLOG
+===================================================== */
 
 function deleteBlog(id) {
 
@@ -377,17 +433,14 @@ function deleteBlog(id) {
     });
 
 
-    // Save updated array
+    // Save updated data
 
     saveBlogs();
-
-
-    // Refresh the page content
 
     filterBlogs();
 
 
-    // Reset editor if the deleted blog was being edited
+    // Reset editor if deleted blog was being edited
 
     if (editingBlogId === id) {
 
@@ -396,14 +449,17 @@ function deleteBlog(id) {
     }
 
 
-    console.log("Blog deleted successfully!");
+    showMessage(
+        "Blog deleted successfully!",
+        "success"
+    );
 
 }
 
 
-/* ==========================================
-   9. RESET BLOG FORM
-========================================== */
+/* =====================================================
+   10. RESET BLOG FORM
+===================================================== */
 
 function resetBlogForm() {
 
@@ -411,7 +467,6 @@ function resetBlogForm() {
 
 
     blogForm.reset();
-
 
     editingBlogId = null;
 
@@ -423,9 +478,9 @@ function resetBlogForm() {
 }
 
 
-/* ==========================================
-   10. CREATE AND UPDATE FORM SUBMISSION
-========================================== */
+/* =====================================================
+   11. CREATE AND UPDATE FORM SUBMISSION
+===================================================== */
 
 if (blogForm) {
 
@@ -434,7 +489,7 @@ if (blogForm) {
         event.preventDefault();
 
 
-        // Get form values
+        // Get input values
 
         const title = blogTitle.value.trim();
 
@@ -443,17 +498,48 @@ if (blogForm) {
         const description = blogDescription.value.trim();
 
 
-        // Validate inputs
+        // TITLE VALIDATION
 
-        if (
-            title.length < 3 ||
-            !category ||
-            description.length < 10
-        ) {
+        if (title.length < 3) {
 
-            alert(
-                "Please enter a valid title, category and description."
+            showMessage(
+                "Blog title must contain at least 3 characters.",
+                "error"
             );
+
+            blogTitle.focus();
+
+            return;
+
+        }
+
+
+        // CATEGORY VALIDATION
+
+        if (!category) {
+
+            showMessage(
+                "Please select a blog category.",
+                "error"
+            );
+
+            blogCategory.focus();
+
+            return;
+
+        }
+
+
+        // DESCRIPTION VALIDATION
+
+        if (description.length < 10) {
+
+            showMessage(
+                "Description must contain at least 10 characters.",
+                "error"
+            );
+
+            blogDescription.focus();
 
             return;
 
@@ -492,7 +578,10 @@ if (blogForm) {
             filterBlogs();
 
 
-            alert("Blog updated successfully!");
+            showMessage(
+                "Blog updated successfully!",
+                "success"
+            );
 
         }
 
@@ -507,13 +596,10 @@ if (blogForm) {
                 description
             );
 
-
-            alert("Blog published successfully!");
-
         }
 
 
-        // Reset form after submission
+        // Reset form
 
         resetBlogForm();
 
@@ -522,9 +608,9 @@ if (blogForm) {
 }
 
 
-/* ==========================================
-   11. CANCEL EDITING
-========================================== */
+/* =====================================================
+   12. CANCEL EDITING
+===================================================== */
 
 if (cancelEditBtn) {
 
@@ -532,14 +618,69 @@ if (cancelEditBtn) {
 
         resetBlogForm();
 
+        showMessage(
+            "Editing cancelled.",
+            "success"
+        );
+
     });
 
 }
 
 
-/* ==========================================
-   12. SEARCH AND CATEGORY FILTER
-========================================== */
+/* =====================================================
+   13. EVENT DELEGATION
+===================================================== */
+
+if (blogGrid) {
+
+    blogGrid.addEventListener("click", function(event) {
+
+        // Find clicked action button
+
+        const button = event.target.closest(
+            "button[data-action]"
+        );
+
+
+        // Ignore other clicks
+
+        if (!button || !blogGrid.contains(button)) {
+
+            return;
+
+        }
+
+
+        // Get action and blog ID
+
+        const action = button.dataset.action;
+
+        const id = Number(button.dataset.id);
+
+
+        // Handle actions
+
+        if (action === "edit") {
+
+            editBlog(id);
+
+        }
+
+        else if (action === "delete") {
+
+            deleteBlog(id);
+
+        }
+
+    });
+
+}
+
+
+/* =====================================================
+   14. SEARCH AND CATEGORY FILTER
+===================================================== */
 
 function filterBlogs() {
 
@@ -556,7 +697,7 @@ function filterBlogs() {
 
     const filteredBlogs = blogs.filter(function(blog) {
 
-        // Search by title or description
+        // Match title or description
 
         const matchesSearch =
 
@@ -565,7 +706,7 @@ function filterBlogs() {
             blog.description.toLowerCase().includes(searchText);
 
 
-        // Filter by category
+        // Match selected category
 
         const matchesCategory =
 
@@ -584,9 +725,9 @@ function filterBlogs() {
 }
 
 
-/* ==========================================
-   13. SEARCH EVENT LISTENER
-========================================== */
+/* =====================================================
+   15. SEARCH EVENT LISTENER
+===================================================== */
 
 if (searchInput) {
 
@@ -598,9 +739,9 @@ if (searchInput) {
 }
 
 
-/* ==========================================
-   14. CATEGORY FILTER EVENT LISTENER
-========================================== */
+/* =====================================================
+   16. CATEGORY FILTER EVENT LISTENER
+===================================================== */
 
 if (categoryFilter) {
 
@@ -612,11 +753,36 @@ if (categoryFilter) {
 }
 
 
-/* ==========================================
-   15. EXPLORE BLOGS BUTTON
-========================================== */
+/* =====================================================
+   17. KEYBOARD EVENT HANDLING
+===================================================== */
 
-if (exploreButton && blogGrid) {
+document.addEventListener("keydown", function(event) {
+
+    // Escape cancels editing
+
+    if (
+        event.key === "Escape" &&
+        editingBlogId !== null
+    ) {
+
+        resetBlogForm();
+
+        showMessage(
+            "Editing cancelled.",
+            "success"
+        );
+
+    }
+
+});
+
+
+/* =====================================================
+   18. EXPLORE BLOGS BUTTON
+===================================================== */
+
+if (exploreButton) {
 
     exploreButton.addEventListener("click", function() {
 
@@ -637,9 +803,9 @@ if (exploreButton && blogGrid) {
 }
 
 
-/* ==========================================
-   16. INITIALIZE APPLICATION
-========================================== */
+/* =====================================================
+   19. INITIALIZE APPLICATION
+===================================================== */
 
 if (blogGrid) {
 
@@ -647,4 +813,7 @@ if (blogGrid) {
 
 }
 
-console.log("BlogSpace application initialized successfully!");
+
+console.log(
+    "BlogSpace initialized successfully!"
+);

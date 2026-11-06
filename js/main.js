@@ -1,7 +1,10 @@
 
 // SAMPLE BLOG DATA
 
-const blogs = [
+
+// DEFAULT BLOG DATA
+
+const defaultBlogs = [
     {
         id: 1,
         title: "A Day in Kolkata",
@@ -12,13 +15,13 @@ const blogs = [
         id: 2,
         title: "Weekend in the Hills",
         category: "Lifestyle",
-        description: "A short escape to the mountains and what I learned there."
+        description: "A short escape to the mountains."
     },
     {
         id: 3,
         title: "My Developer Journey",
         category: "Technology",
-        description: "From writing my first line of code to building real projects."
+        description: "From writing my first line of code to building projects."
     },
     {
         id: 4,
@@ -33,6 +36,55 @@ const blogs = [
         description: "Simple habits that make everyday life better."
     }
 ];
+
+
+// LOAD BLOGS FROM LOCALSTORAGE
+
+function loadBlogs() {
+
+    const savedBlogs = localStorage.getItem("blogspace_blogs");
+
+    if (savedBlogs !== null) {
+
+        try {
+            const parsedBlogs = JSON.parse(savedBlogs);
+
+            if (Array.isArray(parsedBlogs)) {
+                return parsedBlogs;
+            }
+
+        } catch (error) {
+            console.error("Error loading blogs:", error);
+        }
+    }
+
+    // First-time initialization
+    localStorage.setItem(
+        "blogspace_blogs",
+        JSON.stringify(defaultBlogs)
+    );
+
+    return [...defaultBlogs];
+}
+
+
+// MAIN BLOG ARRAY
+
+let blogs = loadBlogs();
+
+
+// SAVE BLOGS TO LOCALSTORAGE
+
+function saveBlogs() {
+
+    localStorage.setItem(
+        "blogspace_blogs",
+        JSON.stringify(blogs)
+    );
+
+    console.log("Blogs saved successfully!");
+}
+
 
 
 // SELECT HTML ELEMENTS

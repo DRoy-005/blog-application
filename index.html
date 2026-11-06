@@ -34,46 +34,38 @@
         </section>
 
         
+
 <section class="blogs" id="blogs">
     <h2>Latest Blogs</h2>
+
     <p class="section-description">
         Explore stories from our community.
     </p>
 
-    <div class="blog-grid">
+    <div class="blog-controls">
+        <input
+            type="search"
+            id="searchInput"
+            placeholder="Search blogs..."
+        >
 
-        <article class="blog-card">
-            <div class="blog-cover cover-one">🌆</div>
-            <div class="card-content">
-                <span class="category">Travel</span>
-                <h3>A Day in Kolkata</h3>
-                <p>Exploring the culture, food, and vibe of Kolkata.</p>
-                <a href="#" class="read-more">Read More →</a>
-            </div>
-        </article>
-
-        <article class="blog-card">
-            <div class="blog-cover cover-two">🏔️</div>
-            <div class="card-content">
-                <span class="category">Lifestyle</span>
-                <h3>Weekend in the Hills</h3>
-                <p>A short escape to the mountains and what I learned there.</p>
-                <a href="#" class="read-more">Read More →</a>
-            </div>
-        </article>
-
-        <article class="blog-card">
-            <div class="blog-cover cover-three">💻</div>
-            <div class="card-content">
-                <span class="category">Technology</span>
-                <h3>My Developer Journey</h3>
-                <p>From writing my first line of code to building real projects.</p>
-                <a href="#" class="read-more">Read More →</a>
-            </div>
-        </article>
-
+        <select id="categoryFilter">
+            <option value="All">All Categories</option>
+            <option value="Travel">Travel</option>
+            <option value="Lifestyle">Lifestyle</option>
+            <option value="Technology">Technology</option>
+        </select>
     </div>
+
+    <div class="blog-grid" id="blogGrid">
+        <!-- JavaScript will insert blog cards here -->
+    </div>
+
+    <p id="emptyMessage" hidden>
+        No blogs found. Try another search!
+    </p>
 </section>
+
 
     </main>
 
